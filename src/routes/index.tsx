@@ -409,6 +409,19 @@ function Index() {
       cancelRef.current = true;
       const local = abortTrackedRequests();
       setRunStamp(0);
+      // Release the controls immediately. The server acknowledgement can be
+      // delayed by an upstream request, but cancellation must never leave the
+      // page looking busy while that acknowledgement travels back.
+      if (announce) {
+        setPhase("idle");
+        setError(null);
+        setKillMsg(
+          local > 0
+            ? `Insta Kill — stopping ${local} active request(s)…`
+            : "Insta Kill — nothing is generating now.",
+        );
+        setNote("Insta Kill — nothing is generating now.");
+      }
       let killedAt = Date.now();
       try {
         const res = await killRuns({});
@@ -430,8 +443,6 @@ function Index() {
         }
       }
       if (announce) {
-        setPhase("idle");
-        setError(null);
         const active = activeRunRef.current;
         if (active) {
           const data = { ...active.data, state: "stopped" as const };
@@ -555,11 +566,20 @@ function Index() {
       if (existing && existing.length > 0) {
         list = recoverInterruptedShots(existing);
       } else {
+        // Timestamp parsing is local and instant. Publish the full panel count
+        // before the character-sheet request so a slow/rate-limited text model
+        // can never make a valid script look frozen at 0/0.
+        const parsed = parseScript(sourceScript);
+        if (parsed.length === 0) {
+          throw new Error("No timestamps found. Each line needs a time like 0:00, (0:00) or [0:00].");
+        }
+        list = parsed.map((s) => ({ ...s, status: "waiting" as const }));
+        setShots(list);
         const mine = manualBible.trim();
         setNote(
           mine
-            ? "Reading script · using your character sheet…"
-            : "Reading script and locking character designs…",
+            ? `${list.length} timestamps found · using your character sheet…`
+            : `${list.length} timestamps found · waiting for character analysis (free service may pause briefly)…`,
         );
         const res = await killable((signal) =>
           analyze({

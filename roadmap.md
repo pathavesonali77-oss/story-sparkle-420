@@ -11,3 +11,4 @@
 - [x] Use dynamic manhwa panel layouts (tilted, staggered, full-bleed), never plain grids
 - [x] Remove forced age, gender, relationship-status, and other lead-character restrictions
 - [x] Run one small script test and show the output image
+- [x] Show parsed panel totals immediately and make Insta Kill release the screen without waiting
