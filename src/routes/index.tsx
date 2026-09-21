@@ -3,7 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { analyzeScript, renderImage, renderBatch } from "@/lib/manga.functions";
 
-import { buildTimeline, fmt, scriptEndTime, type Segment } from "@/lib/script";
+import { buildTimeline, fmt, parseScript, scriptEndTime, type Segment } from "@/lib/script";
 import { buildVideo, webCodecsSupported } from "@/lib/video";
 import { isBlankImageUrl } from "@/lib/blank";
 import { loadRun, saveRun, type SavedRun } from "@/lib/progress";
